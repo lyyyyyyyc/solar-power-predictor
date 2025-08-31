@@ -1,0 +1,29 @@
+{
+  "name": "solar-power-predictor",
+  "version": "1.0.0",
+  "description": "光伏发电量与效益分析系统 - 专业的太阳能投资分析工具",
+  "main": "static_web/index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "solar",
+    "photovoltaic",
+    "power-prediction",
+    "economic-analysis",
+    "renewable-energy",
+    "investment-calculator"
+  ],
+  "author": "Solar Predictor Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/solar-power-predictor.git"
+  },
+  "homepage": "https://solar-power-predictor.vercel.app",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

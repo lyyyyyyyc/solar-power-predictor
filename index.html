@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光伏发电量与效益分析系统</title>
+    <meta name="description" content="专业的光伏发电量预测和经济效益分析工具，帮助您评估太阳能投资回报">
+    <meta name="keywords" content="光伏发电,太阳能,发电量预测,经济效益分析,投资回报">
+    
+    <!-- 引入Chart.js和其他外部资源 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全局重置和基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* 颜色主题 - 科技感蓝绿色调 */
+            --primary-color: #0ea5e9;
+            --primary-hover: #0284c7;
+            --primary-light: #38bdf8;
+            --secondary-color: #10b981;
+            --secondary-hover: #059669;
+            --accent-color: #f59e0b;
+            --accent-hover: #d97706;
+            
+            /* 状态颜色 */
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --info-color: #3b82f6;
+            
+            /* 背景和表面颜色 */
+            --background-color: #f8fafc;
+            --background-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --surface-color: #ffffff;
+            --surface-hover: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            
+            /* 文字颜色 */
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --text-light: #cbd5e1;
+            
+            /* 间距系统 */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            --spacing-3xl: 4rem;
+            
+            /* 圆角系统 */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            
+            /* 阴影系统 */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            
+            /* 渐变效果 */
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            --gradient-secondary: linear-gradient(135deg, var(--secondary-color), #34d399);
+            --gradient-card: linear-gradient(135deg, #ffffff, #f8fafc);
+        }
+
+        /* 基础样式 */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--background-gradient);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 头部样式 */
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: var(--spacing-2xl) var(--spacing-xl);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--spacing-2xl);
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 主要内容区域 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-2xl);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-2xl);
+            align-items: start;
+        }
+
+        /* 卡片基础样式 */
+        .card {
+            background: var(--gradient-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card-title {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            padding: var(--spacing-xl);
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .card-title i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        /* 预测功能区样式 */
+        .prediction-card {
+            background: var(--surface-color);
+        }
+
+        .prediction-form {
+            padding: var(--spacing-2xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 0.95rem;
+        }
+
+        .form-group label i {
+            color: var(--primary-color);
+            width: 1.2rem;
+            text-align: center;
+        }
+
+        .form-group input {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--surface-color);
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* 按钮样式 */
+        .btn-primary,
+        .btn-secondary {
+            padding: var(--spacing-lg) var(--spacing-2xl);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            text-decoration: none;
+            font-size: 1rem;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--gradient-secondary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* 结果展示区样式 */
+        .result-card {
+            background: var(--surface-color);
+        }
+
+        .chart-container {
+            padding: var(--spacing-xl);
+            background: linear-gradient(135deg, #f8fafc, #ffffff);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        #powerChart {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-md);
+        }
+
+        /* 经济效益展示 */
+        .benefits-section {
+            padding: var(--spacing-2xl);
+        }
+
+        .benefits-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xl);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .benefits-title i {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        .benefit-item {
+            background: linear-gradient(135deg, #f8fafc, #ffffff);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            transition: all 0.3s ease;
+        }
+
+        .benefit-item:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-color);
+        }
+
+        .benefit-icon {
+            width: 3rem;
+            height: 3rem;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .benefit-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .benefit-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .benefit-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        /* 辅助工具区样式 */
+        .tools-card {
+            grid-column: 1 / -1;
+            background: var(--surface-color);
+        }
+
+        .tools-title {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            padding: var(--spacing-xl);
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .tools-title i {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+        }
+
+        .tools-content {
+            padding: var(--spacing-2xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xl);
+        }
+
+        .tool-input-group {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: var(--spacing-lg);
+            align-items: end;
+        }
+
+        .tool-input-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .tool-input-group label i {
+            color: var(--accent-color);
+            width: 1.2rem;
+        }
+
+        .tool-input-group input {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--surface-color);
+            font-family: inherit;
+        }
+
+        .tool-input-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .tool-result {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid var(--accent-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+        }
+
+        .result-icon {
+            width: 3rem;
+            height: 3rem;
+            background: var(--accent-color);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .result-text {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .result-label {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .result-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .tool-tips {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 1px solid var(--info-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+        }
+
+        .tool-tips h4 {
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-lg);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .tool-tips h4 i {
+            color: var(--info-color);
+        }
+
+        .tool-tips ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .tool-tips li {
+            color: var(--text-secondary);
+            padding: var(--spacing-sm) 0;
+            position: relative;
+            padding-left: var(--spacing-xl);
+            line-height: 1.5;
+        }
+
+        .tool-tips li::before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+            top: var(--spacing-sm);
+        }
+
+        /* 页脚样式 */
+        .footer {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            margin-top: var(--spacing-2xl);
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Toast 提示样式 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            font-weight: 500;
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            color: white;
+        }
+
+        .toast-warning {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: white;
+        }
+
+        .toast-info {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            color: white;
+        }
+
+        /* 加载状态 */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading .benefit-value {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 100%;
+                padding: var(--spacing-md);
+            }
+            
+            .content-grid {
+                gap: var(--spacing-xl);
+            }
+            
+            .main-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-sm);
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-lg);
+            }
+            
+            .tool-input-group {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+            
+            .main-title {
+                font-size: 1.75rem;
+            }
+            
+            .header {
+                padding: var(--spacing-xl);
+            }
+            
+            .benefits-grid {
+                gap: var(--spacing-md);
+            }
+            
+            .benefit-item {
+                padding: var(--spacing-md);
+                gap: var(--spacing-md);
+            }
+            
+            .benefit-icon {
+                width: 2.5rem;
+                height: 2.5rem;
+                font-size: 1rem;
+            }
+            
+            .tool-result {
+                flex-direction: column;
+                text-align: center;
+                gap: var(--spacing-md);
+            }
+            
+            .result-text {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .prediction-form,
+            .benefits-section,
+            .tools-content {
+                padding: var(--spacing-lg);
+            }
+            
+            .main-title {
+                font-size: 1.5rem;
+            }
+            
+            .card-title {
+                padding: var(--spacing-lg);
+                font-size: 1.1rem;
+            }
+            
+            .benefit-value {
+                font-size: 1.1rem;
+            }
+            
+            .btn-primary,
+            .btn-secondary {
+                padding: var(--spacing-md) var(--spacing-xl);
+                font-size: 0.95rem;
+            }
+        }
+
+        /* 平滑滚动和动画 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* 选择文本样式 */
+        ::selection {
+            background: rgba(14, 165, 233, 0.2);
+            color: var(--text-primary);
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--border-light);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* 加载动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* 焦点样式增强 */
+        button:focus-visible,
+        input:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        /* 按钮禁用状态 */
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 主标题 -->
+        <header class="header">
+            <h1 class="main-title">☀️ 光伏发电量与效益分析系统</h1>
+        </header>
+
+        <!-- 主要内容 -->
+        <main class="main-content">
+            <div class="content-grid">
+                <!-- 预测功能区 -->
+                <div class="card prediction-card">
+                    <h2 class="card-title">
+                        <i class="fas fa-solar-panel"></i>
+                        预测功能区
+                    </h2>
+                    <form class="prediction-form" id="predictionForm">
+                        <div class="form-group">
+                            <label for="city">
+                                <i class="fas fa-map-marker-alt"></i>
+                                所在城市
+                            </label>
+                            <input type="text" 
+                                   id="city" 
+                                   name="city" 
+                                   placeholder="请输入城市名称，如：北京"
+                                   value="北京"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="power">
+                                <i class="fas fa-bolt"></i>
+                                光伏板总功率 (kW)
+                            </label>
+                            <input type="number" 
+                                   id="power" 
+                                   name="power" 
+                                   step="0.1" 
+                                   min="0.1" 
+                                   max="10000" 
+                                   placeholder="例如：5.0"
+                                   value="5.0"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="angle">
+                                <i class="fas fa-angle-up"></i>
+                                安装角度 (度)
+                            </label>
+                            <input type="number" 
+                                   id="angle" 
+                                   name="angle" 
+                                   step="1" 
+                                   min="0" 
+                                   max="90" 
+                                   placeholder="例如：30"
+                                   value="30"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="electricity_price">
+                                <i class="fas fa-money-bill-wave"></i>
+                                本地电价 (元/度)
+                            </label>
+                            <input type="number" 
+                                   id="electricity_price" 
+                                   name="electricity_price" 
+                                   step="0.01" 
+                                   min="0.1" 
+                                   max="5" 
+                                   placeholder="例如：0.5"
+                                   value="0.5"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="system_cost">
+                                <i class="fas fa-calculator"></i>
+                                光伏系统总成本 (元)
+                            </label>
+                            <input type="number" 
+                                   id="system_cost" 
+                                   name="system_cost" 
+                                   step="100" 
+                                   min="1000" 
+                                   max="10000000" 
+                                   placeholder="例如：50000"
+                                   value="50000"
+                                   required>
+                        </div>
+
+                        <button type="submit" class="btn-primary" id="predictBtn">
+                            <i class="fas fa-chart-line"></i>
+                            开始预测
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 结果展示区 -->
+                <div class="card result-card">
+                    <h2 class="card-title">
+                        <i class="fas fa-chart-bar"></i>
+                        结果展示区
+                    </h2>
+                    
+                    <!-- 图表区域 -->
+                    <div class="chart-container">
+                        <canvas id="powerChart" width="600" height="300"></canvas>
+                    </div>
+
+                    <!-- 经济效益展示 -->
+                    <div class="benefits-section">
+                        <h3 class="benefits-title">
+                            <i class="fas fa-coins"></i>
+                            经济效益分析
+                        </h3>
+                        <div class="benefits-grid">
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-battery-full"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <span class="benefit-label">日均总发电量</span>
+                                    <span class="benefit-value" id="dailyPower">-- kWh</span>
+                                </div>
+                            </div>
+
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-calendar-day"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <span class="benefit-label">预估日均收益</span>
+                                    <span class="benefit-value" id="dailyIncome">-- 元</span>
+                                </div>
+                            </div>
+
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <span class="benefit-label">预估月均收益</span>
+                                    <span class="benefit-value" id="monthlyIncome">-- 元</span>
+                                </div>
+                            </div>
+
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-leaf"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <span class="benefit-label">每年减少碳排放</span>
+                                    <span class="benefit-value" id="carbonReduction">-- 公斤</span>
+                                </div>
+                            </div>
+
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <span class="benefit-label">投资回报周期</span>
+                                    <span class="benefit-value" id="paybackPeriod">-- 年</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 辅助工具区 -->
+            <div class="card tools-card">
+                <h2 class="tools-title">
+                    <i class="fas fa-tools"></i>
+                    安装角度小助手
+                </h2>
+                
+                <div class="tools-content">
+                    <div class="tool-input-group">
+                        <div>
+                            <label for="latitude">
+                                <i class="fas fa-globe"></i>
+                                您所在地的纬度
+                            </label>
+                            <input type="number" 
+                                   id="latitude" 
+                                   name="latitude" 
+                                   step="0.1" 
+                                   min="-90" 
+                                   max="90" 
+                                   placeholder="例如：39.9（北京纬度）"
+                                   value="39.9">
+                        </div>
+                        <button type="button" class="btn-secondary" id="calculateAngleBtn">
+                            <i class="fas fa-calculator"></i>
+                            计算最佳角度
+                        </button>
+                    </div>
+                    
+                    <div class="tool-result">
+                        <div class="result-icon">
+                            <i class="fas fa-compass"></i>
+                        </div>
+                        <div class="result-text">
+                            <span class="result-label">推荐安装角度：</span>
+                            <span class="result-value" id="optimalAngle">-- 度</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tool-tips">
+                        <h4>
+                            <i class="fas fa-lightbulb"></i>
+                            角度优化提示
+                        </h4>
+                        <ul>
+                            <li>最佳安装角度通常接近当地纬度</li>
+                            <li>夏季可适当减小角度，冬季可适当增大角度</li>
+                            <li>固定安装一般取纬度-10°到纬度+10°之间</li>
+                            <li>南向安装效果最佳，偏东或偏西会降低效率</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>&copy; 2024 光伏发电量与效益分析系统 | 基于数据驱动的智能分析</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript代码 -->
+    <script>
+        // 全局变量
+        let powerChart = null;
+        let isLoading = false;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 光伏发电量分析系统已启动');
+            
+            // 初始化图表
+            initializePowerChart();
+            
+            // 绑定事件监听器
+            bindEventListeners();
+            
+            // 显示欢迎信息
+            showWelcomeMessage();
+        });
+
+        // 初始化 Chart.js 图表框架
+        function initializePowerChart() {
+            const ctx = document.getElementById('powerChart');
+            
+            if (!ctx) {
+                console.error('❌ 找不到图表画布元素');
+                return;
+            }
+
+            // 销毁现有图表（如果存在）
+            if (powerChart) {
+                powerChart.destroy();
+            }
+
+            // 创建空的图表框架
+            powerChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [
+                        '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
+                        '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
+                        '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
+                        '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
+                    ],
+                    datasets: [{
+                        label: '发电量 (kWh)',
+                        data: new Array(24).fill(0), // 初始化为全零
+                        borderColor: '#0ea5e9',
+                        backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#0ea5e9',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '24小时发电量预测曲线',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            color: '#1e293b'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                },
+                                color: '#64748b'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#0ea5e9',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `发电量: ${context.parsed.y.toFixed(2)} kWh`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '时间',
+                                color: '#64748b',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.1)'
+                            },
+                            ticks: {
+                                color: '#64748b',
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '发电量 (kWh)',
+                                color: '#64748b',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.1)'
+                            },
+                            ticks: {
+                                color: '#64748b',
+                                font: {
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    return value.toFixed(1) + ' kWh';
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+
+            console.log('✅ 图表初始化完成');
+        }
+
+        // 绑定所有事件监听器
+        function bindEventListeners() {
+            // 绑定预测按钮事件
+            const predictForm = document.getElementById('predictionForm');
+            if (predictForm) {
+                predictForm.addEventListener('submit', handlePredictSubmit);
+                console.log('✅ 预测表单事件已绑定');
+            }
+
+            // 绑定角度计算按钮事件
+            const calculateAngleBtn = document.getElementById('calculateAngleBtn');
+            if (calculateAngleBtn) {
+                calculateAngleBtn.addEventListener('click', handleAngleCalculate);
+                console.log('✅ 角度计算按钮事件已绑定');
+            }
+
+            // 绑定输入框验证事件
+            bindInputValidation();
+        }
+
+        // 绑定输入框验证
+        function bindInputValidation() {
+            const inputs = document.querySelectorAll('input[type="number"]');
+            
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    validateInput(this);
+                });
+                
+                input.addEventListener('blur', function() {
+                    validateInput(this);
+                });
+            });
+        }
+
+        // 验证输入框
+        function validateInput(input) {
+            const value = parseFloat(input.value);
+            const min = parseFloat(input.min);
+            const max = parseFloat(input.max);
+            
+            // 移除之前的错误样式
+            input.style.borderColor = '';
+            
+            // 验证范围
+            if (!isNaN(value)) {
+                if (!isNaN(min) && value < min) {
+                    input.style.borderColor = '#ef4444';
+                    showToast(`${input.previousElementSibling.textContent}不能小于${min}`, 'warning');
+                } else if (!isNaN(max) && value > max) {
+                    input.style.borderColor = '#ef4444';
+                    showToast(`${input.previousElementSibling.textContent}不能大于${max}`, 'warning');
+                }
+            }
+        }
+
+        // 处理预测表单提交
+        async function handlePredictSubmit(e) {
+            e.preventDefault();
+            
+            if (isLoading) {
+                console.log('⏳ 正在处理中，请稍候...');
+                return;
+            }
+
+            try {
+                // 设置加载状态
+                setLoadingState(true);
+                
+                // 获取输入数据
+                const formData = getFormData();
+                
+                // 验证数据
+                if (!validateFormData(formData)) {
+                    return;
+                }
+                
+                console.log('📊 开始预测请求...', formData);
+                
+                // 调用预测API
+                const result = await callPredictAPI(formData);
+                
+                if (result.success) {
+                    // 更新图表和结果显示
+                    updatePredictionResults(result.prediction);
+                    showToast('预测完成！', 'success');
+                } else {
+                    throw new Error(result.error || '预测失败');
+                }
+                
+            } catch (error) {
+                console.error('❌ 预测过程出错:', error);
+                showToast(`预测失败: ${error.message}`, 'error');
+                showErrorState();
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        // 调用预测API
+        async function callPredictAPI(formData) {
+            try {
+                // 使用模拟数据进行预测计算
+                const prediction = simulatePrediction(formData);
+                
+                return {
+                    success: true,
+                    prediction: prediction
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        // 模拟预测计算
+        function simulatePrediction(formData) {
+            const { city, power, angle, electricity_price, system_cost } = formData;
+            
+            // 基础发电量计算（简化模型）
+            const basePowerPerKW = 4.5; // 每kW日均发电量
+            const angleEfficiency = Math.cos((angle - 30) * Math.PI / 180 * 0.5); // 角度效率
+            const cityFactor = getCityFactor(city); // 城市系数
+            
+            const dailyPower = power * basePowerPerKW * angleEfficiency * cityFactor;
+            
+            // 生成24小时发电量分布
+            const hourlyPower = generateHourlyPower(dailyPower);
+            
+            // 经济效益计算
+            const economic_benefits = calculateEconomicBenefits(
+                dailyPower, electricity_price, system_cost, power
+            );
+            
+            return {
+                daily_power: dailyPower,
+                hourly_power: hourlyPower,
+                economic_benefits: economic_benefits,
+                weather: {
+                    city: city,
+                    temperature: 25 + Math.random() * 10,
+                    humidity: 50 + Math.random() * 30,
+                    solar_radiation: 700 + Math.random() * 300,
+                    weather_condition: 'sunny',
+                    simulated: true
+                },
+                system_info: {
+                    power_capacity: power,
+                    installation_angle: angle,
+                    electricity_price: electricity_price,
+                    system_cost: system_cost
+                },
+                timestamp: new Date().toLocaleString()
+            };
+        }
+
+        // 获取城市系数
+        function getCityFactor(city) {
+            const cityFactors = {
+                '北京': 1.0,
+                '上海': 0.9,
+                '广州': 1.1,
+                '深圳': 1.1,
+                '成都': 0.8,
+                '西安': 1.0,
+                '杭州': 0.9,
+                '南京': 0.9,
+                '武汉': 0.85,
+                '重庆': 0.75
+            };
+            
+            return cityFactors[city] || 0.9;
+        }
+
+        // 生成24小时发电量分布
+        function generateHourlyPower(dailyTotal) {
+            // 标准化的发电分布曲线
+            const hourlyFactors = [
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  // 0-5点
+                0.05, 0.15, 0.30, 0.50, 0.70, 0.85,  // 6-11点
+                1.00, 0.95, 0.85, 0.70, 0.50, 0.30,  // 12-17点
+                0.15, 0.05, 0.0, 0.0, 0.0, 0.0   // 18-23点
+            ];
+            
+            // 归一化
+            const totalFactor = hourlyFactors.reduce((sum, factor) => sum + factor, 0);
+            const normalizedFactors = hourlyFactors.map(f => f / totalFactor);
+            
+            // 计算每小时发电量
+            return normalizedFactors.map(factor => dailyTotal * factor);
+        }
+
+        // 计算经济效益
+        function calculateEconomicBenefits(daily_power, electricity_price, system_cost, power_capacity) {
+            const daily_income = daily_power * electricity_price;
+            const monthly_income = daily_income * 30;
+            const annual_income = daily_income * 365;
+            const annual_power = daily_power * 365;
+            const carbon_reduction = annual_power * 0.785; // 每kWh减排0.785kg CO2
+            const payback_period = annual_income > 0 ? system_cost / annual_income : Infinity;
+            
+            return {
+                daily_power: Math.round(daily_power * 100) / 100,
+                daily_income: Math.round(daily_income * 100) / 100,
+                monthly_income: Math.round(monthly_income * 100) / 100,
+                annual_income: Math.round(annual_income * 100) / 100,
+                annual_power: Math.round(annual_power * 100) / 100,
+                carbon_reduction: Math.round(carbon_reduction * 100) / 100,
+                payback_period: payback_period === Infinity ? '无法回本' : Math.round(payback_period * 10) / 10
+            };
+        }
+
+        // 获取表单数据
+        function getFormData() {
+            return {
+                city: document.getElementById('city')?.value?.trim() || '北京',
+                power: parseFloat(document.getElementById('power')?.value) || 5.0,
+                angle: parseFloat(document.getElementById('angle')?.value) || 30,
+                electricity_price: parseFloat(document.getElementById('electricity_price')?.value) || 0.5,
+                system_cost: parseFloat(document.getElementById('system_cost')?.value) || 50000
+            };
+        }
+
+        // 验证表单数据
+        function validateFormData(data) {
+            const validations = [
+                { field: 'city', value: data.city, check: v => v && v.length > 0, message: '请输入城市名称' },
+                { field: 'power', value: data.power, check: v => v > 0 && v <= 10000, message: '光伏板功率必须在0.1-10000kW之间' },
+                { field: 'angle', value: data.angle, check: v => v >= 0 && v <= 90, message: '安装角度必须在0-90度之间' },
+                { field: 'electricity_price', value: data.electricity_price, check: v => v > 0 && v <= 5, message: '电价必须在0.1-5元/度之间' },
+                { field: 'system_cost', value: data.system_cost, check: v => v >= 1000 && v <= 10000000, message: '系统成本必须在1000-10000000元之间' }
+            ];
+            
+            for (const validation of validations) {
+                if (!validation.check(validation.value)) {
+                    showToast(validation.message, 'warning');
+                    document.getElementById(validation.field)?.focus();
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        // 更新预测结果
+        function updatePredictionResults(prediction) {
+            // 更新图表
+            updatePowerChart(prediction.hourly_power);
+            
+            // 更新经济效益数据
+            updateEconomicBenefits(prediction.economic_benefits);
+            
+            // 显示成功状态
+            showSuccessState();
+        }
+
+        // 更新发电量图表
+        function updatePowerChart(hourlyPower) {
+            if (!powerChart || !hourlyPower) {
+                console.error('❌ 图表或数据不可用');
+                return;
+            }
+            
+            try {
+                // 更新数据
+                powerChart.data.datasets[0].data = hourlyPower;
+                
+                // 动态调整Y轴最大值
+                const maxPower = Math.max(...hourlyPower);
+                powerChart.options.scales.y.max = Math.ceil(maxPower * 1.1 * 10) / 10;
+                
+                // 重绘图表
+                powerChart.update('active');
+                
+                console.log('✅ 图表更新完成');
+                
+                // 显示统计信息
+                const totalPower = hourlyPower.reduce((sum, power) => sum + power, 0);
+                const peakPower = Math.max(...hourlyPower);
+                const peakHour = hourlyPower.indexOf(peakPower);
+                
+                console.log(`📊 发电统计: 日总量=${totalPower.toFixed(2)}kWh, 峰值=${peakPower.toFixed(2)}kWh@${peakHour}:00`);
+                
+            } catch (error) {
+                console.error('❌ 图表更新失败:', error);
+            }
+        }
+
+        // 更新经济效益显示
+        function updateEconomicBenefits(benefits) {
+            const benefitElements = {
+                'dailyPower': benefits.daily_power + ' kWh',
+                'dailyIncome': benefits.daily_income + ' 元',
+                'monthlyIncome': benefits.monthly_income + ' 元',
+                'carbonReduction': benefits.carbon_reduction + ' 公斤',
+                'paybackPeriod': benefits.payback_period + ' 年'
+            };
+            
+            Object.entries(benefitElements).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    // 添加动画效果
+                    element.style.opacity = '0';
+                    setTimeout(() => {
+                        element.textContent = value;
+                        element.style.opacity = '1';
+                    }, 300);
+                }
+            });
+            
+            console.log('✅ 经济效益数据更新完成');
+        }
+
+        // 处理角度计算
+        async function handleAngleCalculate() {
+            try {
+                const latitudeInput = document.getElementById('latitude');
+                const latitude = parseFloat(latitudeInput?.value);
+                
+                // 验证纬度
+                if (isNaN(latitude) || latitude < -90 || latitude > 90) {
+                    showToast('请输入有效的纬度值（-90到90度之间）', 'warning');
+                    latitudeInput?.focus();
+                    return;
+                }
+                
+                console.log(`📐 计算最佳角度，纬度: ${latitude}°`);
+                
+                // 设置按钮加载状态
+                const button = document.getElementById('calculateAngleBtn');
+                const originalHTML = button?.innerHTML;
+                if (button) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 计算中...';
+                }
+                
+                // 模拟计算延迟
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 计算最佳角度
+                const optimalAngle = calculateOptimalAngle(latitude);
+                
+                // 更新推荐角度显示
+                updateOptimalAngle(optimalAngle);
+                showToast('角度计算完成！', 'success');
+                
+            } catch (error) {
+                console.error('❌ 角度计算出错:', error);
+                showToast(`角度计算失败: ${error.message}`, 'error');
+            } finally {
+                // 恢复按钮状态
+                const button = document.getElementById('calculateAngleBtn');
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-calculator"></i> 计算最佳角度';
+                }
+            }
+        }
+
+        // 计算最佳安装角度
+        function calculateOptimalAngle(latitude) {
+            const absLatitude = Math.abs(latitude);
+            
+            // 基本公式：最佳角度通常接近纬度值
+            let optimalAngle;
+            
+            if (absLatitude < 25) {
+                // 低纬度地区
+                optimalAngle = absLatitude + 5;
+            } else if (absLatitude > 45) {
+                // 高纬度地区
+                optimalAngle = absLatitude - 10;
+            } else {
+                // 中纬度地区
+                optimalAngle = absLatitude;
+            }
+            
+            // 限制角度范围在5-60度之间
+            optimalAngle = Math.max(5, Math.min(60, optimalAngle));
+            
+            return Math.round(optimalAngle * 10) / 10;
+        }
+
+        // 更新最佳角度显示
+        function updateOptimalAngle(angle) {
+            const angleElement = document.getElementById('optimalAngle');
+            if (angleElement) {
+                // 添加动画效果
+                angleElement.style.opacity = '0';
+                setTimeout(() => {
+                    angleElement.textContent = angle + ' 度';
+                    angleElement.style.opacity = '1';
+                }, 300);
+            }
+        }
+
+        // 设置加载状态
+        function setLoadingState(loading) {
+            isLoading = loading;
+            const button = document.getElementById('predictBtn');
+            
+            if (button) {
+                if (loading) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 预测中...';
+                } else {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-chart-line"></i> 开始预测';
+                }
+            }
+            
+            // 添加加载样式到结果区域
+            const resultCard = document.querySelector('.result-card');
+            if (resultCard) {
+                if (loading) {
+                    resultCard.classList.add('loading');
+                } else {
+                    resultCard.classList.remove('loading');
+                }
+            }
+        }
+
+        // 显示成功状态
+        function showSuccessState() {
+            const resultCard = document.querySelector('.result-card');
+            if (resultCard) {
+                resultCard.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    resultCard.style.transform = 'scale(1)';
+                }, 300);
+            }
+        }
+
+        // 显示错误状态
+        function showErrorState() {
+            // 重置图表为空状态
+            if (powerChart) {
+                powerChart.data.datasets[0].data = new Array(24).fill(0);
+                powerChart.update();
+            }
+            
+            // 重置经济效益显示
+            const benefitIds = ['dailyPower', 'dailyIncome', 'monthlyIncome', 'carbonReduction', 'paybackPeriod'];
+            benefitIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = '-- ';
+                }
+            });
+        }
+
+        // 显示欢迎信息
+        function showWelcomeMessage() {
+            console.log('🌞 欢迎使用光伏发电量与效益分析系统！');
+            console.log('💡 使用提示：');
+            console.log('   1. 填写系统参数');
+            console.log('   2. 点击"开始预测"获取发电量分析');
+            console.log('   3. 使用"角度小助手"优化安装角度');
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            // 创建提示元素
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="fas ${getToastIcon(type)}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            // 添加到页面
+            document.body.appendChild(toast);
+            
+            // 显示动画
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // 自动隐藏
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+            
+            console.log(`${getToastIcon(type)} ${message}`);
+        }
+
+        // 获取提示图标
+        function getToastIcon(type) {
+            const icons = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-circle',
+                'warning': 'fa-exclamation-triangle',
+                'info': 'fa-info-circle'
+            };
+            return icons[type] || icons['info'];
+        }
+
+        // 工具函数：格式化数字
+        function formatNumber(num, decimals = 2) {
+            return Number(num).toLocaleString('zh-CN', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        }
+
+        // 导出函数供调试使用
+        if (typeof window !== 'undefined') {
+            window.solarApp = {
+                updatePowerChart,
+                updateEconomicBenefits,
+                handlePredictSubmit,
+                handleAngleCalculate,
+                showToast,
+                formatNumber
+            };
+        }
+    </script>
+</body>
+</html>

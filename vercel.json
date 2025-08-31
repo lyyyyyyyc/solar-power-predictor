@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "name": "solar-predictor",
+  "builds": [
+    {
+      "src": "static_web/index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/static_web/$1"
+    }
+  ],
+  "functions": {
+    "static_web/api/predict.js": {
+      "runtime": "nodejs18.x"
+    },
+    "static_web/api/calculate-angle.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
