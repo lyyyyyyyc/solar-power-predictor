@@ -3,22 +3,14 @@
   "name": "solar-predictor",
   "builds": [
     {
-      "src": "static_web/index.html",
-      "use": "@vercel/static"
+      "src": "static_web/**",      // 构建static_web目录下的所有文件
+      "use": "@vercel/static"      // 使用静态文件构建器
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "/static_web/$1"
+      "src": "/(.*)",             // 匹配所有路由
+      "dest": "/static_web/$1"    // 重定向到static_web目录
     }
-  ],
-  "functions": {
-    "static_web/api/predict.js": {
-      "runtime": "nodejs18.x"
-    },
-    "static_web/api/calculate-angle.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  ]
 }
